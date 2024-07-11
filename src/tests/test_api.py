@@ -2,8 +2,8 @@
 
 import unittest
 
-from llmux import LLM, Prompt, Provider
-from llmux.llm import SinglePromptLLM
+from muxllm import LLM, Prompt, Provider
+from muxllm.llm import SinglePromptLLM
 import os
 
 tools = [
@@ -59,3 +59,4 @@ class TestLLM(unittest.TestCase):
         tool_calls = resp.tool_calls[0].function
 
         self.assertEqual(tool_calls.name, "multiply_numbers")
+

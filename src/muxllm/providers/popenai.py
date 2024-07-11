@@ -1,6 +1,6 @@
 import openai, os
 from typing import Optional
-from llmux.providers.base import CloudProvider
+from muxllm.providers.base import CloudProvider
 
 model_alias = {}
 available_models = [

@@ -2,7 +2,7 @@
 
 import unittest
 
-from llmux import LLM, Provider
+from muxllm import LLM, Provider
 
 class TestProvider(unittest.TestCase):
     def test_openai_provider(self):
