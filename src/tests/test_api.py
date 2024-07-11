@@ -27,6 +27,6 @@ class TestLLM(unittest.TestCase):
         self.assertEqual("Hello, how are you?" in response, True)
 
     def test_single_prompt(self):
-        llm = SinglePromptLLM(Provider.fireworks, "llama-3-8b-instruct", "Translate {{spanish}} to english", system_prompt="You are a helpful translator that translates from spanish to english")
+        llm = SinglePromptLLM(Provider.fireworks, "llama3-8b-instruct", "Translate {{spanish}} to english", system_prompt="You are a helpful translator that translates from spanish to english")
         response = llm.ask(spanish="Hola, como estas?")
         self.assertEqual("Hello, how are you?" in response, True)

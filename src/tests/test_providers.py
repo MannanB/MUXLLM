@@ -16,7 +16,7 @@ class TestProvider(unittest.TestCase):
         self.assertEqual("Hello, how are you?" in response, True)
 
     def test_fireworks_provider(self):
-        llm = LLM(Provider.fireworks, "gpt-3.5-turbo")
+        llm = LLM(Provider.fireworks, "llama3-8b-instruct")
         response = llm.ask("Translate 'Hola, como estas?' to english")
         self.assertEqual("Hello, how are you?" in response, True)
 

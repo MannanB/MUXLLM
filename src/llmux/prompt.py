@@ -11,7 +11,7 @@ class Prompt:
         else:
             self.raw_prompt = prompt
         
-        self.raw_prompt = self.prep_prompt(self.raw_prompt, **kwargs)
+        self.raw_prompt, _ = self.prep_prompt(self.raw_prompt, **kwargs)
 
     def __str__(self) -> str:
         return self.raw_prompt
@@ -19,10 +19,11 @@ class Prompt:
     def prep_prompt(self, prompt, **kwargs):
         new_kwargs = {}
         for key, value in kwargs.items():
-            if not ("{{" + str(key) + "}}") in prompt:
+            key_bracketed = "{{" + str(key) + "}}"
+            if not key_bracketed in prompt:
                 new_kwargs[key] = value
             else:
-                prompt = prompt.replace("{{" + str(key) + "}}", value)
+                prompt = prompt.replace(key_bracketed, value)
         return prompt, new_kwargs
 
     def get(self, **kwargs):

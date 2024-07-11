@@ -12,12 +12,12 @@ model_alias = {
     "gemma2-9b-instruct": "gemma-9b-it",
 }
 
-available_models = ["llama3-8b-instruct", "llama3-70b-instruct", "mixtral-8x7b-instruct", "gemma-7b-instruct", "gemma-9b-instruct"]
+available_models = ["llama3-8b-8192", "llama3-70b-8192", "mixtral-8x7b-32768", "gemma-7b-it", "gemma-9b-it"]
 
 class GroqProvider(CloudProvider):
     def __init__(self, api_key : Optional[str] = None):
         super().__init__(available_models, model_alias)
         if api_key is None:
             api_key = os.getenv("GROQ_API_KEY")
-        self.client = Groq.Client(api_key=api_key)
-        self.async_client = AsyncGroq.Client(api_key=api_key)
+        self.client = Groq(api_key=api_key)
+        self.async_client = AsyncGroq(api_key=api_key)

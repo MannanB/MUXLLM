@@ -6,8 +6,8 @@ model_alias = {
     "firefunction-v2": "accounts/fireworks/models/firefunction-v2",
     "mixtral-8x7b-instruct": "accounts/fireworks/models/mixtral-8x7b-instruct",
     "mixtral-8x22b-instruct": "accounts/fireworks/models/mixtral-8x22b-instruct",
-    "llama-3-8b-instruct": "accounts/fireworks/models/llama-v3-8b-instruct",
-    "llama-3-70b-instruct": "accounts/fireworks/models/llama-v3-70b-instruct",
+    "llama3-8b-instruct": "accounts/fireworks/models/llama-v3-8b-instruct",
+    "llama3-70b-instruct": "accounts/fireworks/models/llama-v3-70b-instruct",
     "gemma-7b-instruct": "accounts/fireworks/models/gemma-7b-it",
     "gemma2-9b-instruct": "accounts/fireworks/models/gemma-9b-it",
 }
