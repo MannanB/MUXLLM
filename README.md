@@ -144,6 +144,7 @@ print(llm.ask(spanish="hola, como estas?").content)
 Providers
 ==
 Currently the following providers are available: openai, groq, fireworks
+
 Google Gemini, Anthropic, and local inference /w huggingface and llama.cpp are planned in the future
 
 Model Alias
