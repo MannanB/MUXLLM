@@ -1,5 +1,5 @@
-from providers.factory import Provider, create_provider
-from prompt import Prompt
+from .providers.factory import Provider, create_provider
+from .prompt import Prompt
 from typing import Optional, Union
 import json
 
@@ -38,15 +38,18 @@ class LLM:
         with open(fp, "r") as f:
             self.history = json.load(f)
 
+    def prep_prompt(self, prompt : Union[str, Prompt], **kwargs):
+        if isinstance(prompt, str):
+            prompt = Prompt(prompt)
+        return prompt.get_kwargs(**kwargs)
+
     def ask(self, prompt: Union[str, Prompt], system_prompt : Optional[Union[str, Prompt]] = None, **kwargs):
-        if isinstance(prompt, Prompt):
-            prompt = prompt.get(**kwargs)
+        prompt, kwargs = self.prep_prompt(prompt, **kwargs)
 
         messages = []
 
         if system_prompt:
-            if isinstance(system_prompt, Prompt):
-                system_prompt = system_prompt.get(**kwargs)
+            system_prompt, kwargs = self.prep_prompt(system_prompt, **kwargs)
             messages.append({"role": "system", "content": system_prompt})
         elif self.system_prompt:
             messages.append({"role": "system", "content": self.system_prompt})
@@ -58,8 +61,7 @@ class LLM:
         return response.choices[0].message.content
     
     def chat(self, prompt: Union[str, Prompt], **kwargs):
-        if isinstance(prompt, Prompt):
-            prompt = prompt.get(**kwargs)
+        prompt, kwargs = self.prep_prompt(prompt, **kwargs)
 
         self.history.append({"role": "user", "content": prompt})
 

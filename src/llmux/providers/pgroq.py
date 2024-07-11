@@ -2,7 +2,7 @@ from groq import Groq, AsyncGroq
 from typing import Optional
 import os
 
-from providers.base import CloudProvider
+from llmux.providers.base import CloudProvider
 
 model_alias = {
     "llama3-8b-instruct": "llama3-8b-8192",

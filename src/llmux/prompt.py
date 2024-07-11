@@ -17,10 +17,20 @@ class Prompt:
         return self.raw_prompt
 
     def prep_prompt(self, prompt, **kwargs):
+        new_kwargs = {}
         for key, value in kwargs.items():
-            prompt = prompt.replace(f"{{{key}}}", value)
-        return prompt
+            if not ("{{" + str(key) + "}}") in prompt:
+                new_kwargs[key] = value
+            else:
+                prompt = prompt.replace("{{" + str(key) + "}}", value)
+        return prompt, new_kwargs
 
     def get(self, **kwargs):
+        prompt, _ = self.prep_prompt(self.raw_prompt, **kwargs)
+        return prompt
+        
+    def get_kwargs(self, **kwargs):
         return self.prep_prompt(self.raw_prompt, **kwargs)
+
+            
     

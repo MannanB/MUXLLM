@@ -1,4 +1,4 @@
-from providers.popenai import BaseOpenAIProvider
+from llmux.providers.popenai import BaseOpenAIProvider
 from typing import Optional
 import os
 

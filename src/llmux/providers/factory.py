@@ -1,5 +1,5 @@
 from enum import Enum
-from providers import pfireworks, popenai, pgroq
+from llmux.providers import pfireworks, popenai, pgroq
 
 # create an enum for the available providers
 class Provider(str, Enum):
