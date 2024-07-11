@@ -3,10 +3,13 @@
 
   
 
-muxllm is a python library designed to be an all-in-one wrapper for various cloud providers as well as local inference (WIP)
+muxllm is a python library designed to be an all-in-one wrapper for using LLMs via various cloud providers as well as local inference (WIP). Its main purpose is to be a unified API that allows for hot-swapping between LLMs and between cloud/local inference. It uses a simple interface with built-in chat and prompting capabilities for easy use.
+  
 
-  
-  
+Install via pip
+```
+pip install muxllm
+```
 
 [Docs](https://github.com/MannanB/MUXLLM)
 
