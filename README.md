@@ -75,7 +75,7 @@ print(response.choices[0].message.content)
 ```python
 from muxllm.providers.factory import Provider, create_provider
 provider = create_provider(Provider.groq)
-response = provider.get_response(messages={...})
+response = provider.get_response(messages={...}, model="llama3-8b-instruct")
 print(response.choices[0].message.content)
 ```
 Streaming
@@ -84,7 +84,7 @@ Streaming via LLM class (does not work with .ask or .chat methods as of right no
 ```python
 from muxllm import LLM, Provider
 llm = LLM(Provider.openai, "gpt-4")
-response = llm(messages={...}, stream=True)
+response = llm(messages={...}, model="llama3-8b-instruct", stream=True)
 for chunk in response:
     print(chunk.choices[0].delta.content)
 ```
@@ -141,6 +141,30 @@ llm = SinglePromptLLM(Provider.openai, "gpt-3.5-turbo", prompt=Prompt("translate
 print(llm.ask(spanish="hola, como estas?").content)
 ```
 
+Providers
+==
+Currently the following providers are available: openai, groq, fireworks
+Google Gemini, Anthropic, and local inference /w huggingface and llama.cpp are planned in the future
 
+Model Alias
+---
+Fireworks, Groq, and local inference have common models. For the sake of generalization, these have been given aliases that you may choose to use if you don't want to use the specific model name for that provider. This gives the benefit of being interchangeable between providers without having to change the model name
+| Name                   | Fireworks                                        | Groq               | HuggingFace |
+| ---------------------- | ------------------------------------------------ | ------------------ | ----------- |
+| llama3-8b-instruct     | accounts/fireworks/models/llama-v3-8b-instruct   | llama3-8b-8192     | WIP         |
+| llama3-70b-instruct    | accounts/fireworks/models/llama-v3-70b-instruct  | llama3-70b-8192    | WIP         |
+| mixtral-8x7b-instruct  | accounts/fireworks/models/mixtral-8x7b-instruct  | mixtral-8x7b-32768 | WIP         |
+| gemma-7b-instruct      | accounts/fireworks/models/gemma-7b-it            | gemma-7b-it        | WIP         |
+| gemma2-9b-instruct     | accounts/fireworks/models/gemma-9b-it            | gemma-9b-it        | WIP         |
+| firefunction-v2        | accounts/fireworks/models/firefunction-v2        | N/A                | WIP         |
+| mixtral-8x22b-instruct | accounts/fireworks/models/mixtral-8x22b-instruct | N/A                | WIP         |
+
+```python
+# the following are all equivalent, in terms of what model they use
+LLM(Provider.fireworks, "llama3-8b-instruct")
+LLM(Provider.groq, "llama3-8b-instruct")
+LLM(Provider.fireworks, "accounts/fireworks/models/llama-v3-8b-instruct")
+LLM(Provider.groq, "llama3-8b-8192")
+```
 
 
