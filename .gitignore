@@ -1,1 +1,5 @@
 __pycache__
+dist
+muxllm.egg-info
+.pypirc
+upload_pypi.sh

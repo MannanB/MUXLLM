@@ -1,0 +1,27 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "muxllm"
+version = "1.0.0"
+description = "muxllm is a python library designed to be an all-in-one wrapper for various cloud providers as well as local inference."
+readme = "README.md"
+authors = [{ name = "Mannan Bhardwaj", email = "mannanb728@gmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["llm", "gpt", "wrapper", "api"]
+dependencies = [
+    "openai",
+    "groq"
+]
+requires-python = ">=3.9"
+
+[project.urls]
+Homepage = "https://github.com/MannanB/MUXLLM"
