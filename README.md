@@ -168,4 +168,9 @@ LLM(Provider.fireworks, "accounts/fireworks/models/llama-v3-8b-instruct")
 LLM(Provider.groq, "llama3-8b-8192")
 ```
 
+Future Plans
+===
 
+* Adding cost tracking / forecasting (I.E. llm.get_cost(...))
+* Support for Google Gemini, Anthropic, and Local Inference
+* Seamless async and streaming support
