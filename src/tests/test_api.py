@@ -1,10 +1,28 @@
-# python -m unittest discover -s tests -t src
+# python -m unittest discover -s tests -t .
 
 import unittest
 
 from llmux import LLM, Prompt, Provider
 from llmux.llm import SinglePromptLLM
 import os
+
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "multiply_numbers",
+            "description": "multiply two numbers",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "a": {"type": "integer"},
+                    "b": {"type": "integer"},
+                },
+                "required": ["a", "b"],
+            },
+        },
+    }
+]
 
 class TestLLM(unittest.TestCase):
     def test_history(self):
@@ -23,10 +41,21 @@ class TestLLM(unittest.TestCase):
 
     def test_ask(self):
         llm = LLM(Provider.openai, "gpt-3.5-turbo")
-        response = llm.ask("Translate {{spanish}} to english", spanish="Hola, como estas?")
+        response = llm.ask("Translate {{spanish}} to english", spanish="Hola, como estas?").content
         self.assertEqual("Hello, how are you?" in response, True)
 
     def test_single_prompt(self):
         llm = SinglePromptLLM(Provider.fireworks, "llama3-8b-instruct", "Translate {{spanish}} to english", system_prompt="You are a helpful translator that translates from spanish to english")
-        response = llm.ask(spanish="Hola, como estas?")
+        response = llm.ask(spanish="Hola, como estas?").content
         self.assertEqual("Hello, how are you?" in response, True)
+
+    def test_function_calling(self):
+        llm = LLM(Provider.fireworks, "firefunction-v2")
+
+        resp = llm.ask("What is 5*5",
+                        tools=tools,
+                        tool_choice={"type": "function"})
+        
+        tool_calls = resp.tool_calls[0].function
+
+        self.assertEqual(tool_calls.name, "multiply_numbers")

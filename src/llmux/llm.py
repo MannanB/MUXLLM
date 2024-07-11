@@ -58,7 +58,7 @@ class LLM:
 
         response = self.provider.get_response(messages, self.model, **kwargs)
 
-        return response.choices[0].message.content
+        return response.choices[0].message
     
     def chat(self, prompt: Union[str, Prompt], **kwargs):
         prompt, kwargs = self.prep_prompt(prompt, **kwargs)
@@ -69,7 +69,7 @@ class LLM:
 
         self.history.append({"role": "assistant", "content": response.choices[0].message.content})
 
-        return response.choices[0].message.content
+        return response.choices[0].message
 
 class SinglePromptLLM(LLM):
     def __init__(self, provider: Provider, model : str, prompt : Union[str, Prompt], system_prompt : Optional[Union[str, Prompt]] = None, api_key : Optional[str] = None, **kwargs):
