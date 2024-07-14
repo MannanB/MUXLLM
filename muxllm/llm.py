@@ -1,4 +1,5 @@
 from .providers.factory import Provider, create_provider
+from .providers.base import ToolCall, ToolResponse
 from .prompt import Prompt
 from typing import Optional, Union
 import json
@@ -14,6 +15,18 @@ english = llm.ask("Translate "Hola, como estas?" to english")
 llm = SinglePromptLLM(Provider.groq, "llama3-8b-instruct", "Translate {{spanish}} to english", system_prompt="You are a helpful translator that translates from spanish to english")
 
 english = llm.ask(spanish="Hola, como estas?")
+
+# example with chat and function calling
+
+llm = LLM(Provider.openai, "gpt-4")
+
+resp = llm.chat("Search up the weather in New York", tools=[...])
+
+# call tool somehow
+tool_response = call_tool(resp.tools[0])
+
+# add tool response to history to keep track of it
+llm.add_tool_response(resp.tools[0], tool_response)
 
 '''
 
@@ -38,6 +51,9 @@ class LLM:
         with open(fp, "r") as f:
             self.history = json.load(f)
 
+    def reset(self):
+        self.history = []
+
     def prep_prompt(self, prompt : Union[str, Prompt], **kwargs):
         if isinstance(prompt, str):
             prompt = Prompt(prompt)
@@ -58,7 +74,7 @@ class LLM:
 
         response = self.provider.get_response(messages, self.model, **kwargs)
 
-        return response.choices[0].message
+        return response.content
     
     def chat(self, prompt: Union[str, Prompt], **kwargs):
         prompt, kwargs = self.prep_prompt(prompt, **kwargs)
@@ -67,9 +83,13 @@ class LLM:
 
         response = self.provider.get_response(self.history, self.model, **kwargs)
 
-        self.history.append({"role": "assistant", "content": response.choices[0].message.content})
+        self.history.append(self.provider.parse_response(response))
 
-        return response.choices[0].message
+        return response.content
+    
+    def add_tool_response(self, tool_call: ToolCall, tool_response: str):
+        tool_response = ToolResponse(id=tool_call.id, name=tool_call.name, response=tool_response)
+        self.history.append(self.provider.parse_tool_response(tool_response))
 
 class SinglePromptLLM(LLM):
     def __init__(self, provider: Provider, model : str, prompt : Union[str, Prompt], system_prompt : Optional[Union[str, Prompt]] = None, api_key : Optional[str] = None, **kwargs):

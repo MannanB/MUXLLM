@@ -19,7 +19,8 @@ classifiers = [
 keywords = ["llm", "gpt", "wrapper", "api"]
 dependencies = [
     "openai",
-    "groq"
+    "groq",
+    "anthropic"
 ]
 requires-python = ">=3.9"
 
