@@ -2,7 +2,10 @@ import openai, os
 from typing import Optional
 from muxllm.providers.base import CloudProvider
 
-model_alias = {}
+model_alias = {
+    "gpt-4-turbo" : "gpt-4-turbo-preview",
+    "gpt-4-vision" : "gpt-4-vision-preview",
+}
 available_models = [
                 "gpt-4-0125-preview",
                 "gpt-4-turbo-preview",
@@ -29,6 +32,8 @@ class BaseOpenAIProvider(CloudProvider):
 
         self.client = openai.Client(base_url=base_url, api_key=api_key)
         self.async_client = openai.AsyncClient(base_url=base_url, api_key=api_key)
+
+        self.client.chat.completions.create
 
 class OpenAIProvider(BaseOpenAIProvider):
     def __init__(self, api_key : Optional[str] = None):

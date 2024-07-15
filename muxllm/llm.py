@@ -1,5 +1,5 @@
 from .providers.factory import Provider, create_provider
-from .providers.base import ToolCall, ToolResponse
+from .providers.base import ToolCall, ToolResponse, LLMResponse
 from .prompt import Prompt
 from typing import Optional, Union
 import json
@@ -59,7 +59,7 @@ class LLM:
             prompt = Prompt(prompt)
         return prompt.get_kwargs(**kwargs)
 
-    def ask(self, prompt: Union[str, Prompt], system_prompt : Optional[Union[str, Prompt]] = None, **kwargs):
+    def ask(self, prompt: Union[str, Prompt], system_prompt : Optional[Union[str, Prompt]] = None, **kwargs) -> LLMResponse:
         prompt, kwargs = self.prep_prompt(prompt, **kwargs)
 
         messages = []
@@ -74,9 +74,9 @@ class LLM:
 
         response = self.provider.get_response(messages, self.model, **kwargs)
 
-        return response.content
-    
-    def chat(self, prompt: Union[str, Prompt], **kwargs):
+        return response
+     
+    def chat(self, prompt: Union[str, Prompt], **kwargs) -> LLMResponse:
         prompt, kwargs = self.prep_prompt(prompt, **kwargs)
 
         self.history.append({"role": "user", "content": prompt})
@@ -85,7 +85,7 @@ class LLM:
 
         self.history.append(self.provider.parse_response(response))
 
-        return response.content
+        return response
     
     def add_tool_response(self, tool_call: ToolCall, tool_response: str):
         tool_response = ToolResponse(id=tool_call.id, name=tool_call.name, response=tool_response)

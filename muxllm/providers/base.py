@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+import json
 
 class ModelNotAvailable(Exception):
     pass
@@ -6,7 +7,7 @@ class ModelNotAvailable(Exception):
 class ToolCall(BaseModel):
     id: str
     name: str
-    args: dict
+    args: dict[str, str]
 
 class ToolResponse(BaseModel):
     id: str
@@ -48,7 +49,7 @@ class CloudProvider:
                     "type": "function",
                     "function": {
                         "name": tool.name,
-                        "arguments": tool.args
+                        "arguments": json.dumps(tool.args)
                     }
                 } for tool in response.tools if response.tools is not None
             ]
@@ -71,8 +72,10 @@ class CloudProvider:
                     messages=messages,
                     **kwargs) 
         message = response.choices[0].message
+
         resp = LLMResponse(model=model, raw_response=response, message=message.content, tools=[
-                            ToolCall(id=message.tool_calls[i].id, name=message.tool_calls[i].function.name, args=message.tool_calls[i].function.arguments) for i in range(len(message.tool_calls))])
+                            ToolCall(id=message.tool_calls[i].id, name=message.tool_calls[i].function.name, args=json.loads(message.tool_calls[i].function.arguments))
+                                for i in range(len(message.tool_calls))] if message.tool_calls else None)
         return resp
     
     async def get_response_async(self, messages : list[dict[str, str | dict]], model : str, **kwargs) -> LLMResponse:
@@ -84,7 +87,8 @@ class CloudProvider:
                     **kwargs) 
         message = response.choices[0].message
         resp = LLMResponse(model=model, raw_response=response, message=message.content, tools=[
-                            ToolCall(id=message.tool_calls[i].id, name=message.tool_calls[i].function.name, args=message.tool_calls[i].function.arguments) for i in range(len(message.tool_calls))])
+                    ToolCall(id=message.tool_calls[i].id, name=message.tool_calls[i].function.name, args=json.loads(message.tool_calls[i].function.arguments))
+                        for i in range(len(message.tool_calls))] if message.tool_calls else None)
         return resp
     
     # def get_response_stream(self, messages : list[dict[str, str]], model : str, **kwargs):
