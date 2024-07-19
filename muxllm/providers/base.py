@@ -37,6 +37,18 @@ class CloudProvider:
         
         return model
     
+    def parse_system_message(self, message : str) -> dict:
+        return {
+            "role": "system",
+            "content": message
+        }
+    
+    def parse_user_message(self, message : str) -> dict:
+        return {
+            "role": "user",
+            "content": message
+        }
+    
     def parse_response(self, response: LLMResponse) -> dict:
         msg = {
             "role": "assistant",

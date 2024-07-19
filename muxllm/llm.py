@@ -38,7 +38,7 @@ class LLM:
         self.history = []
 
         if system_prompt is not None:
-            self.history.append({"role": "system", "content": str(system_prompt)})
+            self.history.append(self.provider.parse_system_message(system_prompt))
 
     def __call__(self, messages: list, **kwargs):
         return self.provider.get_response(messages, self.model, **kwargs)
@@ -66,11 +66,11 @@ class LLM:
 
         if system_prompt:
             system_prompt, kwargs = self.prep_prompt(system_prompt, **kwargs)
-            messages.append({"role": "system", "content": system_prompt})
+            messages.append(self.provider.parse_system_message(system_prompt))
         elif self.system_prompt:
-            messages.append({"role": "system", "content": self.system_prompt})
+            messages.append(self.provider.parse_system_message(self.system_prompt))
 
-        messages.append({"role": "user", "content": prompt})
+        messages.append(self.provider.parse_user_message(prompt))
 
         response = self.provider.get_response(messages, self.model, **kwargs)
 
@@ -79,7 +79,7 @@ class LLM:
     def chat(self, prompt: Union[str, Prompt], **kwargs) -> LLMResponse:
         prompt, kwargs = self.prep_prompt(prompt, **kwargs)
 
-        self.history.append({"role": "user", "content": prompt})
+        self.history.append(self.provider.parse_user_message(prompt))
 
         response = self.provider.get_response(self.history, self.model, **kwargs)
 
