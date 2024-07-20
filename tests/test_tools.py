@@ -86,6 +86,16 @@ class TestTools(unittest.TestCase):
         response = llm.chat("Please tell me what the tool said", max_tokens=500)
         self.assertTrue("sunny" in response.message.lower())
 
+    def test_google_tools(self):
+        llm = LLM(Provider.google, "gemini-1.5-pro")
+        response = llm.chat("What is the weather in San Francisco, CA", tools=TEST_TOOLS)
+        self.assertNotEqual(response.tools, None)
+        self.assertEqual(response.tools[0].name, "get_current_weather")
+
+        llm.add_tool_response(response.tools[0], "It is sunny in San Francisco, CA")
+        response = llm.chat("Please tell me what the tool said")
+        self.assertTrue("sunny" in response.message.lower())
+
 
 if __name__ == '__main__':
     unittest.main()

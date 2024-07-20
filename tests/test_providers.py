@@ -25,5 +25,10 @@ class TestProvider(unittest.TestCase):
         response = llm.ask("Translate 'Hola, como estas?' to english", max_tokens=500)
         self.assertEqual("Hello, how are you?" in response.message, True)
 
+    def test_google_provider(self):
+        llm = LLM(Provider.google, "gemini-1.5-pro")
+        response = llm.ask("Translate 'Hola, como estas?' to english")
+        self.assertEqual("Hello, how are you?" in response.message, True)
+
 if __name__ == '__main__':
     unittest.main()

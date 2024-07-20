@@ -85,7 +85,7 @@ class CloudProvider:
                     **kwargs) 
         message = response.choices[0].message
 
-        resp = LLMResponse(model=model, raw_response=response, message=message.content, tools=[
+        resp = LLMResponse(model=model, raw_response=dict(response), message=message.content, tools=[
                             ToolCall(id=message.tool_calls[i].id, name=message.tool_calls[i].function.name, args=json.loads(message.tool_calls[i].function.arguments))
                                 for i in range(len(message.tool_calls))] if message.tool_calls else None)
         return resp
@@ -98,7 +98,7 @@ class CloudProvider:
                     messages=messages,
                     **kwargs) 
         message = response.choices[0].message
-        resp = LLMResponse(model=model, raw_response=response, message=message.content, tools=[
+        resp = LLMResponse(model=model, raw_response=dict(response), message=message.content, tools=[
                     ToolCall(id=message.tool_calls[i].id, name=message.tool_calls[i].function.name, args=json.loads(message.tool_calls[i].function.arguments))
                         for i in range(len(message.tool_calls))] if message.tool_calls else None)
         return resp

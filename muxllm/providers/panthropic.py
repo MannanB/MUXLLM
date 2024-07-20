@@ -61,7 +61,7 @@ class AnthropicProvider(CloudProvider):
         if response.stop_reason == "tool_use":
             tool_uses = [block for block in response.content if block.type == "tool_use"]
             thinking = next(block for block in response.content if block.type == "text")
-            return LLMResponse(model=model, raw_response=response, message=thinking.text, tools=[ToolCall(id=tool_use.id, name=tool_use.name, args=tool_use.input) for tool_use in tool_uses])
+            return LLMResponse(model=model, raw_response=dict(response), message=thinking.text, tools=[ToolCall(id=tool_use.id, name=tool_use.name, args=tool_use.input) for tool_use in tool_uses])
         return LLMResponse(model=model, raw_response=response, message=response.content.text, tools=None)
     
     async def get_response_async(self, messages : list[dict[str, str | dict]], model : str, **kwargs) -> LLMResponse:
@@ -75,7 +75,7 @@ class AnthropicProvider(CloudProvider):
         if response.stop_reason == "tool_use":
             tool_uses = [block for block in response.content if block.type == "tool_use"]
             thinking = next(block for block in response.content if block.type == "text")
-            return LLMResponse(model=model, raw_response=response, message=thinking.text, tools=[ToolCall(id=tool_use.id, name=tool_use.name, args=tool_use.input) for tool_use in tool_uses])
+            return LLMResponse(model=model, raw_response=dict(response), message=thinking.text, tools=[ToolCall(id=tool_use.id, name=tool_use.name, args=tool_use.input) for tool_use in tool_uses])
         return LLMResponse(model=model, raw_response=response, message=response.content.text, tools=None)
     
     
