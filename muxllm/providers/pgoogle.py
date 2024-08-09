@@ -93,6 +93,7 @@ class GoogleProvider(CloudProvider):
             client = genai.GenerativeModel(model, tools=google_proto_tools)
 
         response = client.generate_content(messages)
+
         
         tools = []
         for part in response.candidates[0].content.parts:
@@ -103,16 +104,27 @@ class GoogleProvider(CloudProvider):
         else:
             return LLMResponse(model=model, raw_response=response, message=response.text, tools=None)
     
-    # async def get_response_async(self, messages : list[dict[str, str | dict]], model : str, **kwargs) -> LLMResponse:
-    #     model = self.validate_model(model)
+    async def get_response_async(self, messages : list[dict[str, str | dict]], model : str, **kwargs) -> LLMResponse:
+        model = self.validate_model(model)
 
-    #     response = await self.async_client.messages.create(
-    #                         model=model,
-    #                         messages=messages,
-    #                         **kwargs) 
+        google_proto_tools = []
+        if "tools" in kwargs:
+            google_proto_tools = self.tools_dict_to_google_protos(kwargs["tools"])
+
+        if messages[0]["role"] == "system":
+            system_message = messages[0]["parts"][0]
+            client = genai.GenerativeModel(model, system_instruction=system_message, tools=google_proto_tools)
+            messages = messages[1:]
+        else:
+            client = genai.GenerativeModel(model, tools=google_proto_tools)
+
+        response = await client.generate_content_async(messages)
         
-    #     if response.stop_reason == "tool_use":
-    #         tool_uses = [block for block in response.content if block.type == "tool_use"]
-    #         thinking = next(block for block in response.content if block.type == "text")
-    #         return LLMResponse(model=model, raw_response=response, message=thinking.text, tools=[ToolCall(id=tool_use.id, name=tool_use.name, args=tool_use.input) for tool_use in tool_uses])
-    #     return LLMResponse(model=model, raw_response=response, message=response.content.text, tools=None)
+        tools = []
+        for part in response.candidates[0].content.parts:
+            if fn := part.function_call:
+                tools.append(ToolCall(id='', name=fn.name, args={k: v for k, v in fn.args.items()}))
+        if tools:
+            return LLMResponse(model=model, raw_response=response, message="", tools=tools)
+        else:
+            return LLMResponse(model=model, raw_response=response, message=response.text, tools=None)
