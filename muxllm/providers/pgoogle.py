@@ -1,4 +1,5 @@
 import google.generativeai as genai
+import proto
 import os
 from muxllm.providers.base import CloudProvider, LLMResponse, ToolCall, ToolResponse
 from typing import Optional
@@ -30,28 +31,31 @@ class GoogleProvider(CloudProvider):
 
     def parse_response(self, response: LLMResponse) -> dict:
         if not response.tools:
-            return {"role": "model",
-                    "parts": [response.message] if response.message else []}
+            resp = {"role": "model",
+                    "parts": [genai.protos.Part({"text": response.message})] if response.message else []}
         else:
-            return {"role": "model",
-                    "parts": [{"functionCall": {
+            resp = {"role": "model",
+                    "parts": [genai.protos.Part({"function_call": genai.protos.FunctionCall({  
                         "name": tool.name,
                         "args": tool.args
-                        }} for tool in response.tools]
+                        })}) for tool in response.tools]
                     }
+        return genai.protos.Content(resp)
+
+
 
     def parse_tool_response(self, tool_resp: ToolResponse) -> dict:
-        return {
-            "role": "user",
+        return genai.protos.Content({
+            "role": "function",
             "parts": [{
-                "functionResponse": {
+                "function_response": genai.protos.FunctionResponse({
                     "name": tool_resp.name,
                     "response": {
                         "name": tool_resp.name,
-                        "content": tool_resp.content
+                        "content": tool_resp.response
                     }
-            }}]
-        }
+            })}]
+        })
 
     def tools_dict_to_google_protos(self, tools: list[dict[str, str | dict]]) -> list[genai.protos.Tool]:
         google_proto_tools = []
@@ -86,16 +90,18 @@ class GoogleProvider(CloudProvider):
             client = genai.GenerativeModel(model, system_instruction=system_message, tools=google_proto_tools)
             messages = messages[1:]
         else:
-            client = genai.GenerativeModel(model)
+            client = genai.GenerativeModel(model, tools=google_proto_tools)
 
         response = client.generate_content(messages)
-
+        
         tools = []
-        for part in response.candidates[0].content:
+        for part in response.candidates[0].content.parts:
             if fn := part.function_call:
                 tools.append(ToolCall(id='', name=fn.name, args={k: v for k, v in fn.args.items()}))
-
-        return LLMResponse(model=model, raw_response=response, message=response.text, tools=tools)
+        if tools:
+            return LLMResponse(model=model, raw_response=response, message="", tools=tools)
+        else:
+            return LLMResponse(model=model, raw_response=response, message=response.text, tools=None)
     
     # async def get_response_async(self, messages : list[dict[str, str | dict]], model : str, **kwargs) -> LLMResponse:
     #     model = self.validate_model(model)

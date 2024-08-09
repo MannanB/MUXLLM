@@ -16,7 +16,7 @@ class ToolResponse(BaseModel):
 
 class LLMResponse(BaseModel):
     model: str
-    raw_response: dict
+    raw_response: dict | object # raw response from the provider. Ideally dict, but some wierd providers might return a custom object
     message: str | None
     tools: list[ToolCall] | None
 

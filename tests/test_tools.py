@@ -4,6 +4,7 @@ import unittest
 
 from muxllm import LLM, Provider
 
+
 TEST_TOOLS = [
     {
         "type": "function",
