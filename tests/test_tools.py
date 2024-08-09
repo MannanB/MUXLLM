@@ -3,7 +3,25 @@
 import unittest
 
 from muxllm import LLM, Provider
+from muxllm.tools import tool, Param, ToolBox
+from muxllm.providers.base import ToolCall
 
+my_tools = ToolBox()
+
+@tool("get_current_weather", my_tools, "Get the current weather", [
+    Param("location", "string", "The city and state, e.g. San Francisco, CA"),
+    Param("format", "string", "The temperature unit to use. Infer this from the users location.")
+])
+def get_current_weather(location, format):
+    return f"It is sunny in {location} according to the weather forecast in {format}"
+
+@tool("get_n_day_weather_forecast", my_tools, "Get an N-day weather forecast", [
+    Param("location", "string", "The city and state, e.g. San Francisco, CA"),
+    Param("format", "string", "The temperature unit to use. Infer this from the users location."),
+    Param("num_days", "integer", "The number of days to forecast")
+])
+def get_n_day_weather_forecast(location, format, num_days):
+    return f"It will be sunny for the next {num_days} days in {location} according to the weather forecast in {format}"
 
 TEST_TOOLS = [
     {
@@ -57,11 +75,19 @@ TEST_TOOLS = [
 ]
 
 class TestTools(unittest.TestCase):
+    def test_toolbox(self):
+        self.assertEqual(my_tools.to_dict(), TEST_TOOLS)
+        self.assertEqual(my_tools.invoke_tool(
+            ToolCall(id="1", name="get_current_weather", args={"location": "San Francisco, CA", "format": "fahrenheit"})
+        ), "It is sunny in San Francisco, CA according to the weather forecast in fahrenheit")
+
     def test_openai_tools(self):
         llm = LLM(Provider.openai, "gpt-4-turbo")
-        response = llm.chat("What is the weather in San Francisco, CA", tools=TEST_TOOLS)
+        response = llm.chat("What is the weather in San Francisco, CA in fahrenheit", tools=TEST_TOOLS)
         self.assertNotEqual(response.tools, None)
         self.assertEqual(response.tools[0].name, "get_current_weather")
+
+        self.assertEqual(my_tools.invoke_tool(response.tools[0]), "It is sunny in San Francisco, CA according to the weather forecast in fahrenheit")
 
         llm.add_tool_response(response.tools[0], "It is sunny in San Francisco, CA")
         response = llm.chat("Please tell me what the tool said")
