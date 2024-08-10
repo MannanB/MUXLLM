@@ -16,7 +16,7 @@ class ToolResponse(BaseModel):
 
 class LLMResponse(BaseModel):
     model: str
-    raw_response: dict | object # raw response from the provider. Ideally dict, but some wierd providers might return a custom object
+    raw_response: dict | object # raw response from the provider. Ideally dict, but google uses protobuf natively
     message: str | None
     tools: list[ToolCall] | None
 

@@ -89,6 +89,9 @@ class LLM:
     
     def add_user_message(self, message: str):
         self.history.append(self.provider.parse_user_message(message))
+
+    def add_model_message(self, message: str):
+        self.history.append(self.provider.parse_response(message))
     
     def add_tool_response(self, tool_call: ToolCall, tool_response: str):
         tool_response = ToolResponse(id=tool_call.id, name=tool_call.name, response=tool_response)

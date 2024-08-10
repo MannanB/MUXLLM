@@ -1,4 +1,5 @@
 
+
 # MUXLLM
 
   
@@ -26,7 +27,7 @@ llm = LLM(Provider.openai, "gpt-4")
 
 response = llm.ask("Translate 'Hola, como estas?' to english")
 
-print(response.content) # Hello, how are you?
+print(response.message) # Hello, how are you?
 ```
 
 API keys can be passed via the api_key parameter in the LLM class. Otherwise, it will try to get the key from environment variables with the following pattern: [PROVIDER_NAME]_API_KEY
@@ -46,6 +47,8 @@ print(response.content)
 # the previous response has automatically been stored
 response = llm.chat("what are you doing right now?") 
 llm.save_history("./history.json") # save history if you want to continue conversation later
+...
+llm.load_history("./history.json")
 ```
 Function calling (only for function-calling enabled models)
 
@@ -56,13 +59,23 @@ llm = LLM(Provider.fireworks, "firefunction-v2")
 resp = llm.chat("What is 5*5",
                 tools=tools,
                 tool_choice={"type": "function"})
+                
+# muxllm returns a list of ToolCalls
+tool_call = resp.tools[0]
 
-tool_call = resp.tool_calls[0].function
-# call function
+# call function with args
 tool_response = ...
-# the function response is not automatically added to history, so you must manually add it if you want the llm to have the tool response in context
-llm.history.append({"role": "tool", "content": tool_response})
+
+# the function response is not automatically added to history, so you must manually add it
+llm.add_tool_response(tool_call, tool_response)
+
+resp = llm.chat("what did the tool tell you?")
+print(resp.message) # 25
 ```
+
+Each ToolCall contains the name of the tool (```tool_call.name```) and its arguments in a dict (```tool_call.args```). Arguments are always passed as strings, so integers, floats, etc, must be parsed in the function.
+
+In order to use tools you need to supply a dict containing information about each tool that you have available. Check out the [Open AI Guide](https://platform.openai.com/docs/guides/function-calling) to see how to do this.
 
 Backend API usage
 ----
@@ -72,33 +85,29 @@ If you need more fine control, you may choose to directly call the provider's ap
 from muxllm import LLM, Provider
 llm = LLM(Provider.openai, "gpt-4")
 response = llm(messages={...})
-print(response.choices[0].message.content)
+print(response.message)
 ```
 2. Using the Provider factory
 ```python
 from muxllm.providers.factory import Provider, create_provider
 provider = create_provider(Provider.groq)
 response = provider.get_response(messages={...}, model="llama3-8b-instruct")
-print(response.choices[0].message.content)
+print(response.message)
 ```
-Streaming
-----
-Streaming via LLM class (does not work with .ask or .chat methods as of right now)
+There may be some edge cases or features of a certain provider that muxllm doesn't cover. In that case, you may want to see the raw response returned directly from either their web API or SDK. This can be done via ```LLMResponse.raw_response``` (note that LLMResponse is what is returned any time you call the LLM, whether it is through .chat, .ask, or any of the above functions)
 ```python
 from muxllm import LLM, Provider
 llm = LLM(Provider.openai, "gpt-4")
-response = llm(messages={...}, model="llama3-8b-instruct", stream=True)
-for chunk in response:
-    print(chunk.choices[0].delta.content)
+response = llm(messages={...})
+print(response.raw_response)
+
+assert response.message == response.raw_response.choices[0].message
 ```
-Streaming via provider class
-```python
-from muxllm.providers.factory import Provider, create_provider
-provider = create_provider(Provider.groq)
-response = provider.get_response(messages={...}, stream=True)
-for chunk in response:
-    print(chunk.choices[0].delta.content)
-```
+
+Streaming
+----
+As of right now streaming support is unavailable. However, it is a planned feature.
+
 Async
 ---
 Async is only possible through the provider class as of right now
@@ -106,7 +115,7 @@ Async is only possible through the provider class as of right now
 from muxllm.providers.factory import Provider, create_provider
 provider = create_provider(Provider.groq)
 # in some async function
-response = await provider.get_response_async(messages={...})
+response = await provider.get_response_async(messages={...}, model="...")
 ```
 Prompting with muxllm
 --
@@ -120,7 +129,7 @@ from muxllm import LLM, Provider
 llm  =  LLM(Provider.openai, "gpt-3.5-turbo")
 myprompt = "Translate {{spanish}} to english"
 
-response  =  llm.ask(myprompt, spanish="Hola, como estas?").content
+response = llm.ask(myprompt, spanish="Hola, como estas?").content
 ```
 Prompts inside txt files
 ```python
@@ -128,6 +137,7 @@ from muxllm import LLM, Provider, Prompt
 
 llm  =  LLM(Provider.openai, "gpt-3.5-turbo")
 # muxllm will look for prompt files in cwd and ./prompts if that folder exists
+# You can also provide a direct or relative path to the txt file
 response  =  llm.ask(Prompt("translate_prompt.txt"), spanish="Hola, como estas?").content
 ```
 
@@ -144,11 +154,52 @@ llm = SinglePromptLLM(Provider.openai, "gpt-3.5-turbo", prompt=Prompt("translate
 print(llm.ask(spanish="hola, como estas?").content)
 ```
 
+Tools with muxllm
+-- 
+Muxllm provides a simple way to automatically create the tools dictionary as well as easily call the functions that the LLM requests.
+To use this, you first a create a 	```ToolBox``` that contains all of your tools. Then, using the ```tool``` decorator, you can define functions as tools that you want to use. 
+```python
+from muxllm.tools import tool, ToolBox, Param
+
+my_tools = ToolBox()
+
+@tool("get_current_weather", my_tools, "Get the current weather", [
+    Param("location", "string", "The city and state, e.g. San Francisco, CA"),
+    Param("fmt", "string", "The temperature unit to use. Infer this from the users location.")
+])
+def get_current_weather(location, fmt):
+    return f"It is sunny in {location} according to the weather forecast in {fmt}"
+```
+Note that for the Param class, the second argument is the type of the argument. The possible types are defined here: https://json-schema.org/understanding-json-schema/reference/type
+
+Once you have created each tool, you can then easily convert it to the tools dictionary and pass it to an LLM.
+```python
+tools_dict = my_tools.to_dict()
+response = llm.chat("What is the weather in San Francisco, CA in fahrenheit", tools=tools_dict)
+```
+Finally, you can use the ```ToolBox``` to invoke the tool and get a response
+```python
+tool_call = response.tools[0]
+tool_resp = my_tools.invoke_tool(tool_call)
+llm.add_tool_response(tool_call, tool_resp)
+```
+Its also possible to have multiple ```ToolBox```s and then combine them. This is useful if you want to remove or add certain tools from the LLM dynamically.
+```python
+coding_tools = ToolBox()
+...
+writing_tools = ToolBox()
+...
+research_tools = ToolBox()
+...
+# When passing the tools to the LLM
+all_tools = coding_tools.to_dict() + writing_tools.to_dict() + research_tools.to_dict()
+```
+
 Providers
 ==
-Currently the following providers are available: openai, groq, fireworks
+Currently the following providers are available: openai, groq, fireworks, Google Gemini, Anthropic
 
-Google Gemini, Anthropic, and local inference /w huggingface and llama.cpp are planned in the future
+Local inference /w huggingface and llama.cpp are planned in the future
 
 Model Alias
 ---
@@ -175,5 +226,5 @@ Future Plans
 ===
 
 * Adding cost tracking / forecasting (I.E. llm.get_cost(...))
-* Support for Google Gemini, Anthropic, and Local Inference
+* Support for Local Inference
 * Seamless async and streaming support

@@ -84,6 +84,9 @@ class GoogleProvider(CloudProvider):
         google_proto_tools = []
         if "tools" in kwargs:
             google_proto_tools = self.tools_dict_to_google_protos(kwargs["tools"])
+        # google doesnt need tool_choice, delete it if it exists
+        if "tool_choice" in kwargs:
+            del kwargs["tool_choice"]
 
         if messages[0]["role"] == "system":
             system_message = messages[0]["parts"][0]
