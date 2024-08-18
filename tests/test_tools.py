@@ -10,14 +10,14 @@ my_tools = ToolBox()
 
 @tool("get_current_weather", my_tools, "Get the current weather", [
     Param("location", "string", "The city and state, e.g. San Francisco, CA"),
-    Param("format", "string", "The temperature unit to use. Infer this from the users location.")
+    Param("format", "string", "The temperature unit to use. Infer this from the users location.", enum=["celsius", "fahrenheit"])
 ])
 def get_current_weather(location, format):
     return f"It is sunny in {location} according to the weather forecast in {format}"
 
 @tool("get_n_day_weather_forecast", my_tools, "Get an N-day weather forecast", [
     Param("location", "string", "The city and state, e.g. San Francisco, CA"),
-    Param("format", "string", "The temperature unit to use. Infer this from the users location."),
+    Param("format", "string", "The temperature unit to use. Infer this from the users location.", enum=["celsius", "fahrenheit"]),
     Param("num_days", "integer", "The number of days to forecast")
 ])
 def get_n_day_weather_forecast(location, format, num_days):

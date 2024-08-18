@@ -228,3 +228,4 @@ Future Plans
 * Adding cost tracking / forecasting (I.E. llm.get_cost(...))
 * Support for Local Inference
 * Seamless async and streaming support
+* Homogenized error handling across SDKs

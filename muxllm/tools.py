@@ -14,7 +14,7 @@ class ToolBox:
     def invoke_tool(self, tool_call: ToolCall):
         tool = self.get_tool(tool_call.name)
         if tool:
-            return tool(*tool_call.args)
+            return tool(**tool_call.args)
         else:
             return None
         
@@ -22,16 +22,22 @@ class ToolBox:
         return [tool.to_dict() for tool in self.tools.values()]
 
 class Param:
-    def __init__(self, name: str, type: str, description: str):
+    def __init__(self, name: str, type: str, description: str, enum: list[str] = None):
         self.name = name
         self.description = description
         self.type = type
+        self.enum = enum
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d = {
             "type": self.type,
             "description": self.description
         }
+
+        if self.enum:
+            d["enum"] = self.enum
+
+        return d
 
 class Tool:
     def __init__(self, name: str, description: str, parameters: dict, function: callable):
@@ -43,11 +49,14 @@ class Tool:
     def to_dict(self) -> dict[str, Any]:
         return {
             "type": "function",
-            "description": self.description,
-            "parameters": {
-                "type": "object",
-                "properties": {param.name: param.to_dict() for param in self.parameters},
-                "required": [param.name for param in self.parameters]
+            "function" : {
+                "name": self.name,
+                "description": self.description,
+                "parameters": {
+                    "type": "object",
+                    "properties": {param.name: param.to_dict() for param in self.parameters},
+                    "required": [param.name for param in self.parameters]
+                }
             }
         }
     

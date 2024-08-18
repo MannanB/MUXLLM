@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "muxllm"
-version = "1.0.0"
+version = "1.0.1"
 description = "muxllm is a python library designed to be an all-in-one wrapper for various cloud providers as well as local inference."
 readme = "README.md"
 authors = [{ name = "Mannan Bhardwaj", email = "mannanb728@gmail.com" }]
@@ -20,7 +20,8 @@ keywords = ["llm", "gpt", "wrapper", "api"]
 dependencies = [
     "openai",
     "groq",
-    "anthropic"
+    "anthropic",
+    "google-generativeai"
 ]
 requires-python = ">=3.9"
 
