@@ -1,5 +1,6 @@
 from .providers.factory import Provider, create_provider
 from .providers.base import ToolCall, ToolResponse, LLMResponse
+from .tools import ToolBox
 from .prompt import Prompt
 from typing import Optional, Union
 import json
@@ -62,6 +63,12 @@ class LLM:
     def ask(self, prompt: Union[str, Prompt], system_prompt : Optional[Union[str, Prompt]] = None, **kwargs) -> LLMResponse:
         prompt, kwargs = self.prep_prompt(prompt, **kwargs)
 
+        # if tools is in kwargs, check if its a ToolBox and convert it to a dict
+        if "tools" in kwargs:
+            tools = kwargs["tools"]
+            if isinstance(tools, ToolBox):
+                kwargs["tools"] = tools.to_dict()
+
         messages = []
 
         if system_prompt:
@@ -78,6 +85,11 @@ class LLM:
      
     def chat(self, prompt: Union[str, Prompt], **kwargs) -> LLMResponse:
         prompt, kwargs = self.prep_prompt(prompt, **kwargs)
+
+        if "tools" in kwargs:
+            tools = kwargs["tools"]
+            if isinstance(tools, ToolBox):
+                kwargs["tools"] = tools.to_dict()
 
         self.history.append(self.provider.parse_user_message(prompt))
 
