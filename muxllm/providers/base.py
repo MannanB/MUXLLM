@@ -20,9 +20,33 @@ class LLMResponse(BaseModel):
     message: str | None
     tools: list[ToolCall] | None
 
-class CloudProvider:
-    def __init__(self, available_models : list[str], model_alias : dict[str, str]):
-        self.available_models = available_models
+class BaseProvider:
+    def __init__(self):
+        pass
+
+    def parse_system_message(self, message : str) -> dict:
+        pass
+
+    def parse_user_message(self, message : str) -> dict:
+        pass
+
+    def parse_response(self, response: LLMResponse) -> dict:
+        pass
+
+    def parse_tool_response(self, tool_resp: ToolResponse) -> dict:
+        pass
+
+    def get_response(self, messages : list[dict[str, str | dict]], model : str, **kwargs) -> LLMResponse:
+        pass
+
+    async def get_response_async(self, messages : list[dict[str, str | dict]], model : str, **kwargs) -> LLMResponse:
+        pass
+
+    # def get_response_stream(self, messages : list[dict[str, str]], model : str, **kwargs):
+    #     pass
+
+class CloudProvider(BaseProvider):
+    def __init__(self, model_alias : dict[str, str]):
         self.model_alias = model_alias
         self.client = None
         self.async_client = None
@@ -30,11 +54,6 @@ class CloudProvider:
     def validate_model(self, model : str): 
         if model in self.model_alias:
             model = self.model_alias[model]
-
-        # if available_models is empty, all models are availablel;mokmp;kmp;okpokp
-        if len(self.available_models) > 0 and not model in self.available_models:
-            raise ModelNotAvailable(f"Model {model} is not available. Available models are {', '.join(self.available_models)}")
-        
         return model
     
     def parse_system_message(self, message : str) -> dict:
@@ -113,3 +132,5 @@ class CloudProvider:
         
     #     for chunk in response:
     #         yield LLMResponse(model=model, raw_response=chunk, message=chunk.choices[0].delta.content, tool=chunk.choices[0].delta.tools)
+
+

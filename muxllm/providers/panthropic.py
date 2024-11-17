@@ -10,17 +10,9 @@ model_alias = {
     "claude-3-haiku": "claude-3-haiku-20240307",
 }
 
-available_models = ["claude-3-5-sonnet-20240620",
-                    "claude-3-opus-20240229",
-                    "claude-3-sonnet-20240229",
-                    "claude-3-haiku-20240307",
-                    "claude-2.1",
-                    "claude-2.0",
-                    "claude-instant-1.2"]
-
 class AnthropicProvider(CloudProvider):
     def __init__(self, api_key : Optional[str] = None):
-        super().__init__(available_models, model_alias)
+        super().__init__(model_alias)
         if api_key is None:
             api_key = os.getenv("ANTHROPIC_API_KEY")
         self.client = anthropic.Anthropic(api_key=api_key)

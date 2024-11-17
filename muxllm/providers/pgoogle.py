@@ -6,11 +6,9 @@ from typing import Optional
 
 model_alias = {}
 
-available_models = []
-
 class GoogleProvider(CloudProvider):
     def __init__(self, api_key : Optional[str] = None):
-        super().__init__(available_models, model_alias)
+        super().__init__(model_alias)
         if api_key is None:
             api_key = os.getenv("GOOGLE_API_KEY")
 
