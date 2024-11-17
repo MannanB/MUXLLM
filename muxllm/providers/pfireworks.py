@@ -18,4 +18,4 @@ class FireworksProvider(BaseOpenAIProvider):
     def __init__(self, api_key: Optional[str] = None):
         if api_key is None:
             api_key = os.getenv("FIREWORKS_API_KEY")
-        super().__init__(available_models, model_alias, base_url="https://api.fireworks.ai/inference/v1", api_key=api_key)
+        super().__init__(model_alias, base_url="https://api.fireworks.ai/inference/v1", api_key=api_key)

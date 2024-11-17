@@ -20,6 +20,11 @@ class ToolBox:
         
     def to_dict(self) -> dict[str, Any]:
         return [tool.to_dict() for tool in self.tools.values()]
+    
+    def __add__(self, other):
+        new_toolbox = ToolBox()
+        new_toolbox.tools = {**self.tools, **other.tools}
+        return new_toolbox
 
 class Param:
     def __init__(self, name: str, type: str, description: str, enum: list[str] = None):
